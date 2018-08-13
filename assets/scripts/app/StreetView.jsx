@@ -57,12 +57,22 @@ class StreetView extends React.Component {
         prevProps.system.viewportHeight !== viewportHeight ||
         prevProps.street.width !== this.props.street.width) {
       this.onResize()
+      this.updateScrollLeft()
       this.calculateStreetIndicatorsPositions()
     }
   }
 
-  onResize = () => {
+  updateScrollLeft = () => {
+    const streetWidth = this.props.street.width * TILE_SIZE
+    const { viewportWidth } = this.props.system
+
+    const scrollLeft = (streetWidth + (BUILDING_SPACE * 2) - viewportWidth) / 2
+    this.streetSectionOuter.scrollLeft = scrollLeft
+  }
+
+  onResize = (dontScroll) => {
     const { viewportWidth, viewportHeight } = this.props.system
+
     let streetSectionTop
     let streetSectionHeight = this.streetSectionInner.offsetHeight
 
@@ -84,12 +94,14 @@ class StreetView extends React.Component {
       skyTop = 0
     }
 
+    const streetWidth = this.props.street.width * TILE_SIZE
     let streetSectionCanvasLeft =
-      ((viewportWidth - (this.props.street.width * TILE_SIZE)) / 2) - BUILDING_SPACE
+      ((viewportWidth - streetWidth) / 2) - BUILDING_SPACE
     if (streetSectionCanvasLeft < 0) {
       streetSectionCanvasLeft = 0
     }
 
+    this.streetSectionCanvas.style.width = streetWidth + 'px'
     this.streetSectionCanvas.style.left = streetSectionCanvasLeft + 'px'
     this.streetSectionInner.style.top = streetSectionTop + 'px'
 
