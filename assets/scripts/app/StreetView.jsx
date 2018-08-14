@@ -51,14 +51,16 @@ class StreetView extends React.Component {
     }
   }
 
-  componentDidUpdate (prevProps) {
+  componentDidUpdate (prevProps, prevState) {
     const { viewportWidth, viewportHeight } = this.props.system
     if (prevProps.system.viewportWidth !== viewportWidth ||
         prevProps.system.viewportHeight !== viewportHeight ||
         prevProps.street.width !== this.props.street.width) {
       this.onResize()
+    }
+
+    if (prevState.onResized && !this.state.onResized) {
       this.updateScrollLeft()
-      this.calculateStreetIndicatorsPositions()
     }
   }
 
@@ -68,6 +70,8 @@ class StreetView extends React.Component {
 
     const scrollLeft = (streetWidth + (BUILDING_SPACE * 2) - viewportWidth) / 2
     this.streetSectionOuter.scrollLeft = scrollLeft
+
+    this.calculateStreetIndicatorsPositions()
   }
 
   onResize = (dontScroll) => {
@@ -108,7 +112,8 @@ class StreetView extends React.Component {
     this.setState({
       streetSectionSkyTop,
       scrollTop,
-      skyTop
+      skyTop,
+      onResized: true
     })
   }
 
@@ -152,8 +157,7 @@ class StreetView extends React.Component {
 
     this.setState({
       posLeft: posLeft,
-      posRight: posRight,
-      onResized: true
+      posRight: posRight
     })
   }
 
