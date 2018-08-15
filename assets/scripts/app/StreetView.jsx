@@ -49,10 +49,14 @@ class StreetView extends React.Component {
       onResized: false,
       buildingWidth: 0
     }
+
+    this.ignoreScrollEvents = false
   }
 
   componentDidUpdate (prevProps, prevState) {
     const { viewportWidth, viewportHeight } = this.props.system
+    const { remainingWidth } = this.props.street
+
     if (prevProps.system.viewportWidth !== viewportWidth ||
         prevProps.system.viewportHeight !== viewportHeight ||
         prevProps.street.width !== this.props.street.width) {
@@ -62,15 +66,41 @@ class StreetView extends React.Component {
     if (prevState.onResized && !this.state.onResized) {
       this.updateScrollLeft()
     }
+
+    if (prevProps.street.remainingWidth !== remainingWidth) {
+      this.updateStreetCanvasMargin(prevProps.street.remainingWidth, remainingWidth)
+    }
   }
 
-  updateScrollLeft = () => {
+  updateStreetCanvasMargin = (prevRemainingWidth, remainingWidth) => {
+    let prevStreetMargin = (-prevRemainingWidth * TILE_SIZE / 2)
+    let currStreetMargin = (-remainingWidth * TILE_SIZE / 2)
+
+    prevStreetMargin = (prevStreetMargin > BUILDING_SPACE) ? prevStreetMargin : BUILDING_SPACE
+    currStreetMargin = (currStreetMargin > BUILDING_SPACE) ? currStreetMargin : BUILDING_SPACE
+
+    if (prevStreetMargin !== currStreetMargin) {
+      this.streetSectionCanvas.style.marginLeft = currStreetMargin + 'px'
+      this.streetSectionCanvas.style.marginRight = currStreetMargin + 'px'
+
+      const delta = Math.round(currStreetMargin - prevStreetMargin)
+      this.updateScrollLeft(delta)
+      console.log(this.streetSectionOuter.scrollLeft)
+    }
+  }
+
+  updateScrollLeft = (delta) => {
     const streetWidth = this.props.street.width * TILE_SIZE
     const { viewportWidth } = this.props.system
 
-    const scrollLeft = (streetWidth + (BUILDING_SPACE * 2) - viewportWidth) / 2
-    this.streetSectionOuter.scrollLeft = scrollLeft
+    if (delta) {
+      this.streetSectionOuter.scrollLeft += delta
+    } else {
+      const scrollLeft = (streetWidth + (BUILDING_SPACE * 2) - viewportWidth) / 2
+      this.streetSectionOuter.scrollLeft = scrollLeft
+    }
 
+    this.ignoreScrollEvents = true
     this.calculateStreetIndicatorsPositions()
   }
 
@@ -119,8 +149,12 @@ class StreetView extends React.Component {
 
   handleStreetScroll = (event) => {
     infoBubble.suppress()
+    if (this.ignoreScrollEvents) {
+      this.ignoreScrollEvents = false
+      return
+    }
 
-    var scrollPos = this.streetSectionOuter.scrollLeft
+    const scrollPos = this.streetSectionOuter.scrollLeft
     this.calculateStreetIndicatorsPositions()
 
     this.setState({
