@@ -83,9 +83,9 @@ class StreetView extends React.Component {
       this.streetSectionCanvas.style.marginLeft = currStreetMargin + 'px'
       this.streetSectionCanvas.style.marginRight = currStreetMargin + 'px'
 
-      const delta = Math.round(currStreetMargin - prevStreetMargin)
+      this.setState({ streetMargin: currStreetMargin })
+      const delta = currStreetMargin - prevStreetMargin
       this.updateScrollLeft(delta)
-      console.log(this.streetSectionOuter.scrollLeft)
     }
   }
 
@@ -243,9 +243,10 @@ class StreetView extends React.Component {
   }
 
   render () {
+    const dirtMargin = (this.state.streetMargin > BUILDING_SPACE) ? (this.state.streetMargin + 25) : this.state.buildingWidth
     const dirtStyle = {
-      marginLeft: (-this.state.buildingWidth) + 'px',
-      marginRight: (-this.state.buildingWidth) + 'px'
+      marginLeft: (-dirtMargin) + 'px',
+      marginRight: (-dirtMargin) + 'px'
     }
 
     return (
