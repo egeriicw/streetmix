@@ -85,6 +85,13 @@ class StreetView extends React.Component {
 
       this.setState({ streetMargin: currStreetMargin })
       const delta = currStreetMargin - prevStreetMargin
+
+      if (this.streetSectionOuter.scrollLeft === 0 && delta < 0) {
+        this.streetSectionCanvas.style.left = Math.abs(delta) + 'px'
+      } else {
+        this.streetSectionCanvas.style.left = 0
+      }
+
       this.updateScrollLeft(delta)
     }
   }
@@ -104,7 +111,7 @@ class StreetView extends React.Component {
     this.calculateStreetIndicatorsPositions()
   }
 
-  onResize = (dontScroll) => {
+  onResize = () => {
     const { viewportWidth, viewportHeight } = this.props.system
 
     let streetSectionTop
